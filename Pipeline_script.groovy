@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout code') {
             steps {
-                git branch: 'master', url: 'https://github.com/your-org/your-repo.git'
+                git branch: 'master', url: 'https://github.com/Kamalesh3112/Building-and-deploying-docker-image-using-Jenkins-CI/tree/main.git'
             }
         }8
         stage('Build Docker image') {
