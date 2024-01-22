@@ -1,20 +1,52 @@
 pipeline {
     agent any
+
+    environment {
+        REGISTRY = "docker.io"
+        IMAGE_NAME = "my-kubernetes-image"
+        KUBECTL_VERSION = "1.28.2"
+    }
+
     stages {
-        stage('Build') {
+        stage('Checkout code') {
             steps {
-                script {
-                    def dockerImage = docker.build("my-image:${env.BUILD_NUMBER}")
-                    dockerImage.push()
-                }
+                git branch: 'master', url: 'https://github.com/your-org/your-repo.git'
+            }
+        }8
+        stage('Build Docker image') {
+            steps {
+                sh """
+                    docker build -t $REGISTRY/$IMAGE_NAME .
+                """
             }
         }
-        stage('Deploy') {
+
+        stage('Deploy to Kubernetes') {
             steps {
-                script {
-                    sh "kubectl apply -f kubernetes.yaml"
-                }
+                sh """
+                    kubectl apply -f deployment.yaml --namespace my-namespace
+                    kubectl apply -f service.yaml --namespace my-namespace
+                """
             }
+        }
+
+        stage('Post-deployment verification') {
+            steps {
+                sleep 30
+                sh """
+                    kubectl get pods --namespace my-namespace
+                    kubectl get services --namespace my-namespace
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful!"
+        }
+        failure {
+            echo "Deployment failed!"
         }
     }
 }
